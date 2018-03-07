@@ -241,13 +241,15 @@ export memkiller = seqr.bind !->*
 export scenehanger = seqr.bind !->*
 	#monkeypatch = laneChecker
 	monkeypatch = wrapScenario (scenario) ->
-		#scenario = laneChecker scenario
+		scenario = laneChecker scenario
 		(env, ...args) ->
 			task = scenario env, ...args
 			task.get(\run).then seqr.bind !->*
 				scene = yield task.get \scene
 				scene.beforePhysics ->
+					return if scene.time < 5.0
 					env.controls.throttle = 1.0
+					env.controls.steering = 1.0
 			return task
 
 	for i from 0 to 100

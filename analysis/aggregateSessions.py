@@ -3,9 +3,12 @@ import sys
 import os
 import msgpack
 import gzip
+import json
 
-def loadSession(f, sid):
-    data = list(msgpack.Unpacker(f, encoding='utf-8'))
+def loadSession(directory, sid):
+    #data = list(msgpack.Unpacker(f, encoding='utf-8'))
+    path = os.path.join(directory, 'simulator.jsons')
+    data = [json.loads(l) for l in open(path)]
 
     scenarioStarts = [(0, 'startup')]
     for i, row in enumerate(data):
@@ -32,6 +35,7 @@ def trialToNumpy(data, sid, block, experiment):
     isBlind = False
     throttle = 0
     brake = 0
+    steering = 0
     for row in data:
         ts = row['time']
         if trialStartTime is None:
@@ -44,27 +48,30 @@ def trialToNumpy(data, sid, block, experiment):
         if 'telemetry' in d:
             throttle = d['telemetry']['throttle']
             brake = d['telemetry']['brake']
+            steering = d['telemetry']['steering']
 
         if 'physics' not in row['data']:
             continue
         pos = {}
-        #pos['ts'] = ts
         pos['ts'] = row['data']['physics']['time']
+        if pos['ts'] is None:
+            continue
         prevTime = pos['ts']
         for body in row['data']['physics']['bodies']:
             if body.get('objectClass') != 'vehicle':
                 continue
             if body.get('objectName') == 'player':
                 pos['player'] = body['position']['z']
+                pos['player_lateral'] = body['position']['x']
             else:
                 pos['leader'] = body['position']['z']
         
         
-        positions.append([sid, block, experiment, pos['ts'], pos['player'], pos.get('leader', np.nan), row['time'], isBlind, throttle, brake])
+        positions.append([sid, block, experiment, pos['ts'], pos['player'], pos.get('leader', np.nan), row['time'], isBlind, throttle, brake, steering, pos['player_lateral']])
     
     if len(positions) == 0:
         return None
-    positions = np.rec.fromrecords(positions, names='sessionId,block,experiment,ts,player,leader,absTs,blind,throttle,brake')
+    positions = np.rec.fromrecords(positions, names='sessionId,block,experiment,ts,player,leader,absTs,blind,throttle,brake,steering,player_lateral')
     # There's a bug in the simulator that causes the ts to increment
     # twice. Correct it here, so it's right for the analysis scripts.
     positions['ts'] /= 2.0
@@ -87,7 +94,7 @@ def rowstack(arrays):
 def sessionToNumpy(path):
     data = []
     sid = os.path.basename(path)
-    for trial in loadSession(gzip.open(path), sid):
+    for trial in loadSession(path, sid):
         d = trialToNumpy(*trial)
         if d is None:
             continue
@@ -100,8 +107,14 @@ def sessionToNumpy(path):
 def main(paths=sys.argv[1:]):
     data = []
     for path in paths:
-        data.append(sessionToNumpy(path))
-
+        try:
+            rows = sessionToNumpy(path)
+        except ValueError:
+            continue
+        if len(rows) > 0:
+            data.append(rows)
+    if len(data) == 0:
+        return None
     data = rowstack(data)
     np.save(sys.stdout, data)
     return data

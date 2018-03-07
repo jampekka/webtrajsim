@@ -5,7 +5,7 @@ seqr = require './seqr.ls'
 
 {addGround, Scene} = require './scene.ls'
 {addVehicle} = require './vehicle.ls'
-{NonSteeringControl} = require './controls.ls'
+{NonSteeringControl, NonPedalControl} = require './controls.ls'
 {DefaultEngineSound, BellPlayer, NoisePlayer} = require './sounds.ls'
 assets = require './assets.ls'
 prelude = require 'prelude-ls'
@@ -1938,6 +1938,171 @@ exportScenario \steerToTarget, (env, {duration=60.0, oddballRate=0.05}={}) ->*
 
 	return yield @get \done
 
+exportScenario \driveToDistance, (env) ->*
+	scene = new Scene
+	scene.preroll = ->
+
+	#sky = yield P.resolve assets.addSky scene
+
+	player = new THREE.Object3D()
+	player.add scene.camera
+	scene.camera.rotation.y = Math.PI
+	player.position.y = 1.5
+	
+	#scene.camera.rotation.x = Math.PI/2.0
+	#player.position.y = 200.0
+	
+	scene.visual.add player
+
+	terrainSize = 1000
+	textureSize = 10
+	textureRep = terrainSize/textureSize
+	texureRep = 10
+	groundTex = THREE.ImageUtils.loadTexture 'res/pink_noise_4k_floathack.png'
+	#groundTex.minFilter = THREE.LinearMipMapLinearFilter
+	groundTex.wrapS = groundTex.wrapT = THREE.RepeatWrapping
+	groundTex.repeat.set textureRep, textureRep
+	groundTex.anisotropy = 16
+	groundColor = new THREE.Color()
+	groundMaterialBasic = new THREE.MeshBasicMaterial do
+		color: groundColor
+		map: groundTex
+		side: THREE.DoubleSide
+	
+	groundMaterial = new THREE.ShaderMaterial do
+		uniforms:
+			time: value: 1.0
+			scale: value: 1.0
+			contrast: value: 1.0
+			map: { type: 't', value: groundTex }
+		vertexShader: """
+		varying vec2 vUv;
+		varying vec4 mvPosition;
+		uniform float scale;
+		void main()
+		{
+			vUv = uv/scale;
+			mvPosition = modelViewMatrix * vec4( position, 1.0 );
+			vec4 wPosition = modelMatrix * vec4(position, 1.0);
+			gl_Position = projectionMatrix * mvPosition;
+			//vUv = wPosition.xz*scale;
+			//vUv.y += wPosition.z / 1000.0 * scale;
+		}
+		"""
+
+		fragmentShader: """
+		\#define M_PI 3.1415926535897932384626433832795
+		uniform float time;
+		uniform sampler2D map;
+		uniform float contrast;
+		varying vec4 mvPosition;
+		varying vec2 vUv;
+		
+		void main() {
+			//float minimumMult = 0.2;
+			//float fadeTime = 10.0;
+			//float contrast = ((sin(time/fadeTime*2.0*M_PI) + 1.0)/2.0);
+			//gl_FragColor = vec4(wtf, 1.0 - wtf, 0.0, 1.0);
+			vec4 color = texture2D(map, vUv.xy);
+			float lum = color.a + color.b/256.0 + color.g/256.0/256.0 + color.r/256.0/256.0/256.0;
+			//vec4 color = vec4(vec3(fbm(vUv.xy)), 1.0);
+			/*if(mvPosition.x > 0.0) {
+				contrast = 1.0 - contrast;
+			}*/
+			
+			//contrast += minimumMult;
+			//contrast /= 1.0 + minimumMult;
+			lum = (((lum - 0.5)*2.0)*contrast + 1.0)/2.0;
+			color.rgb = vec3(lum);
+			gl_FragColor = color;
+		}
+
+		"""
+	groundMaterial.uniforms.scale.value = 0.05
+
+	groundGeometry = new THREE.PlaneGeometry terrainSize, terrainSize, 0, 0
+	ground = new THREE.Mesh groundGeometry, groundMaterial
+	ground.rotation.x = -Math.PI/2.0
+
+	ground_ahead = ground.clone()
+	scene.visual.add ground
+	scene.visual.add ground_ahead
+	cameraPosition = new THREE.Vector3
+	scene.beforeRender.add ->
+		cameraPosition.setFromMatrixPosition scene.camera.matrixWorld
+		nTerrains = Math.floor (cameraPosition.z+terrainSize/2.0)/terrainSize
+		ground.position.z = nTerrains*terrainSize
+		ground_ahead.position.z = ground.position.z + terrainSize
+	
+	
+	/*tubeGeometry = new THREE.CylinderGeometry 5, 5, 1000, 32, 1, true
+	tube = new THREE.Mesh do
+		tubeGeometry,
+		groundMaterialBasic
+	tube.rotation.x = -Math.PI/2.0
+	tube.scale.set -1, -1, 1
+	scene.visual.add tube*/
+
+
+	target = new THREE.Mesh do
+		new THREE.BoxGeometry(2, 0.1, 1),
+		new THREE.MeshBasicMaterial color: 0xffffff
+	#target.visible = false
+	target.position.z = 30
+	scene.visual.add target
+
+	
+	base_speed = 60/3.6
+	speed = base_speed
+	target_z = 10
+	visible_for = 2.0
+
+	delay = (time, f) ->
+		elapsed = 0.0
+		scene.beforePhysics (dt) ->
+			elapsed += dt
+			return true if elapsed < time
+			f()
+			return false
+	
+	ground.position.z = 0.0
+	scene.beforePhysics (dt) !->
+		player.position.z += speed*dt
+		z = player.position.z
+		#contrast = ((Math.sin(scene.time) + 1)/2 + 0.5)/1.5
+		min_contrast = 0.3
+		cycle_dur = 20
+		contrast = (Math.sin(scene.time/cycle_dur*Math.PI*2) + 1)/2.0
+		contrast = (1.0 - min_contrast)*contrast + min_contrast
+		console.log contrast
+		#scale = 0.2 - (Math.sin(scene.time/10*Math.PI*2))*0.1
+		#console.log(scale*0.1)
+		#groundMaterial.uniforms.scale.value = scale
+		#groundMaterial.color.setHSL(0, 0, contrast)
+		groundMaterial.uniforms.time.value = scene.time
+		groundMaterial.uniforms.contrast.value = contrast
+		#ground.position.z = player.position.z
+		#target.position.z = z
+		if target.position.z - player.position.z < 3.0
+			target.visible = true
+		if player.position.z >= target.position.z
+			target.position.z += Math.random()*30 + 30 + visible_for*speed
+			target.visible = true
+			delay visible_for, ->
+				target.visible = false
+		target.visible = false
+
+
+	#scene.beforePhysics ->
+	#	scene.player.physical.velocity.z = speed
+
+	# "Return" the scene to the caller, so they know
+	# we are ready
+	@let \scene, scene
+
+	# Run until somebody says "done".
+	yield @get \done
+
 exportScenario \vsyncTest, (env) ->*
 	camera = new THREE.OrthographicCamera -1, 1, -1, 1, 0.1, 10
 			..position.z = 5
@@ -1976,8 +2141,6 @@ exportScenario \vsyncTest, (env) ->*
 	yield @get \run
 
 	return yield @get \done
-
-
 
 exportScenario \soundSpook, (env, {preIntro=false, spookRate=1/20.0 duration=90.0, preSilence=30.0, postSilence=20.0}={}) ->*
 	bell = yield BellPlayer env

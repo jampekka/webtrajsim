@@ -19,12 +19,16 @@ require './node_modules/cannon/tools/threejs/CannonDebugRenderer.js'
 eachFrame = (f) -> new P (accept, reject) ->
 	stopped = false
 	clock = new THREE.Clock
+	time = 0.0
 	tick = ->
 		if stopped
 			return
 		requestAnimationFrame tick
 		dt = clock.getDelta()
-		return if dt == 0
+		time += dt
+		if dt == 0
+			console.log "Got Zero dt at #{time}!"
+			return
 		result = f dt
 		if result?
 			accept result
@@ -175,6 +179,7 @@ export runScenario = seqr.bind (scenarioLoader, ...args) !->*
 		# clear everything.
 		(new CANNON.World).step(1/20)
 		# And similar hack for three.js
+		console.log "Cleaning up"
 		renderer.render (new THREE.Scene), scene.camera
 		renderer.dispose()
 	#renderer.shadowMapEnabled = true
@@ -227,10 +232,13 @@ export runScenario = seqr.bind (scenarioLoader, ...args) !->*
 	env.logger.write startingScenario: scenarioLoader.scenarioName
 	scene.onStart.dispatch()
 
+	console.log "Entering loop"
 	yield eachFrame (dt) !->
 		return true if not done.isPending()
 		scene.tick dt
+	console.log "Exiting loop"
 	scene.onExit.dispatch()
+	console.log "Stopped scene"
 	env.logger.write exitedScenario: scenarioLoader.scenarioName
 
 	env.notifications.fadeOut()
@@ -247,6 +255,7 @@ export runScenario = seqr.bind (scenarioLoader, ...args) !->*
 	yield outro
 	scope.let \destroy
 	yield scope
+	console.log "Scope destroyed"
 	env.logger.write destroyedScenario: scenarioLoader.scenarioName
 
 #require './three.js/examples/js/controls/VRControls.js'
