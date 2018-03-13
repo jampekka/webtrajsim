@@ -1616,7 +1616,7 @@ pursuitDiscriminationBase = seqr.bind (env, getParameters) ->*
 
 	gratingLeft = assets.SineGratingBitmap resolution: 256, cycles: parameters.frequency
 	gratingRight = assets.SineGratingBitmap resolution: 256, cycles: parameters.frequency
-	introContent = $ env.L '%pursuitDiscrimination.intro'
+	introContent = $ env.L "%pursuitDiscrimination.intro"
 	gratingLeft = $(gratingLeft)
 		.css width: '50%', height: 'auto', display: 'inline-block'
 		.css transform: 'rotate(-45deg)'
@@ -1950,7 +1950,7 @@ exportScenario \driveToDistance, (env) ->*
 	player.position.y = 1.5
 	
 	#scene.camera.rotation.x = Math.PI/2.0
-	#player.position.y = 200.0
+	#player.position.y = 100.0
 	
 	scene.visual.add player
 
@@ -1991,14 +1991,16 @@ exportScenario \driveToDistance, (env) ->*
 		"""
 
 		fragmentShader: """
+		\#extension GL_OES_standard_derivatives : enable
 		\#define M_PI 3.1415926535897932384626433832795
 		uniform float time;
 		uniform sampler2D map;
 		uniform float contrast;
 		varying vec4 mvPosition;
 		varying vec2 vUv;
+		uniform float scale;
 		
-		void main() {
+		vec4 textureNoise() {
 			//float minimumMult = 0.2;
 			//float fadeTime = 10.0;
 			//float contrast = ((sin(time/fadeTime*2.0*M_PI) + 1.0)/2.0);
@@ -2014,7 +2016,11 @@ exportScenario \driveToDistance, (env) ->*
 			//contrast /= 1.0 + minimumMult;
 			lum = (((lum - 0.5)*2.0)*contrast + 1.0)/2.0;
 			color.rgb = vec3(lum);
-			gl_FragColor = color;
+			return color;
+		}
+
+		void main() {
+			gl_FragColor = textureNoise();
 		}
 
 		"""
@@ -2047,12 +2053,12 @@ exportScenario \driveToDistance, (env) ->*
 	target = new THREE.Mesh do
 		new THREE.BoxGeometry(2, 0.1, 1),
 		new THREE.MeshBasicMaterial color: 0xffffff
-	#target.visible = false
+	target.visible = false
 	target.position.z = 30
 	scene.visual.add target
 
-	
-	base_speed = 60/3.6
+
+	base_speed = 30/3.6
 	speed = base_speed
 	target_z = 10
 	visible_for = 2.0
@@ -2064,17 +2070,23 @@ exportScenario \driveToDistance, (env) ->*
 			return true if elapsed < time
 			f()
 			return false
-	
+	delayP = (time) -> new Promise (accept) -> delay time, accept
+
 	ground.position.z = 0.0
+
+	waitFor = (f) -> new P (accept) -> f (accept)
+	state =
+		speed: base_speed
 	scene.beforePhysics (dt) !->
-		player.position.z += speed*dt
-		z = player.position.z
+		player.position.z += state.speed*dt
+		#z = player.position.z
+
+		return
 		#contrast = ((Math.sin(scene.time) + 1)/2 + 0.5)/1.5
 		min_contrast = 0.3
 		cycle_dur = 20
 		contrast = (Math.sin(scene.time/cycle_dur*Math.PI*2) + 1)/2.0
 		contrast = (1.0 - min_contrast)*contrast + min_contrast
-		console.log contrast
 		#scale = 0.2 - (Math.sin(scene.time/10*Math.PI*2))*0.1
 		#console.log(scale*0.1)
 		#groundMaterial.uniforms.scale.value = scale
@@ -2091,6 +2103,17 @@ exportScenario \driveToDistance, (env) ->*
 			delay visible_for, ->
 				target.visible = false
 		target.visible = false
+	
+	goal_distance = 5.0
+	goalline = new THREE.Geometry
+	goalline.vertices.push new THREE.Vector3 -2.0, 0.1, 0.0
+	goalline.vertices.push new THREE.Vector3 2.0, 0.1, 0.0
+	goalline = new THREE.Line do
+		goalline,
+		new THREE.LineBasicMaterial color: 0xffffff
+	scene.visual.add goalline
+	scene.beforePhysics (dt) ->
+		goalline.position.z = player.position.z + goal_distance
 
 
 	#scene.beforePhysics ->
@@ -2099,6 +2122,32 @@ exportScenario \driveToDistance, (env) ->*
 	# "Return" the scene to the caller, so they know
 	# we are ready
 	@let \scene, scene
+
+	yield ui.instructionScreen env, ->
+		@ \title .text "Get ready"
+		@ \cancel-button .hide!
+	
+	waitCatch = -> new P (accept) ->
+		env.controls.change (btn, isOn) !~>
+			if btn == 'catch' and isOn
+				accept()
+				return false
+
+	while true
+		target.visible = false
+		yield delayP 2.0
+		target_dist = Math.random()*30 + 30
+		target.position.z = goalline.position.z + target_dist + visible_for*state.speed
+		target.visible = true
+		yield delayP visible_for
+		target.visible = false
+		yield waitCatch()
+		error = goalline.position.z - target.position.z
+		error_percentage = (error/target_dist)*100
+		yield ui.instructionScreen env, ->
+			@ \title .text "Off by #{error_percentage.toFixed 1} percent"
+			@ \content .append "<p>Which is #{error.toFixed 2} meters or #{(error/state.speed).toFixed 1} seconds</p>"
+			@ \cancel-button .hide!
 
 	# Run until somebody says "done".
 	yield @get \done
@@ -2141,6 +2190,9 @@ exportScenario \vsyncTest, (env) ->*
 	yield @get \run
 
 	return yield @get \done
+
+ctt2 = require './catchTheThing2.ls'
+exportScenario \catchTheThing2, ctt2.catchTheThing
 
 exportScenario \soundSpook, (env, {preIntro=false, spookRate=1/20.0 duration=90.0, preSilence=30.0, postSilence=20.0}={}) ->*
 	bell = yield BellPlayer env
