@@ -1616,7 +1616,7 @@ pursuitDiscriminationBase = seqr.bind (env, getParameters) ->*
 
 	gratingLeft = assets.SineGratingBitmap resolution: 256, cycles: parameters.frequency
 	gratingRight = assets.SineGratingBitmap resolution: 256, cycles: parameters.frequency
-	introContent = $ env.L "%pursuitDiscrimination.intro"
+	introContent = $ env.L '%pursuitDiscrimination.intro'
 	gratingLeft = $(gratingLeft)
 		.css width: '50%', height: 'auto', display: 'inline-block'
 		.css transform: 'rotate(-45deg)'
@@ -2191,8 +2191,10 @@ exportScenario \vsyncTest, (env) ->*
 
 	return yield @get \done
 
-ctt2 = require './catchTheThing2.ls'
-exportScenario \catchTheThing2, ctt2.catchTheThing
+ctt2 = require './pursuitDiscrimination2.ls'
+#exportScenario \catchTheThing2, ctt2.stimtest
+
+module.exports['stimtest'] = ctt2.stimtest
 
 exportScenario \soundSpook, (env, {preIntro=false, spookRate=1/20.0 duration=90.0, preSilence=30.0, postSilence=20.0}={}) ->*
 	bell = yield BellPlayer env

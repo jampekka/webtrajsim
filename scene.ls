@@ -71,6 +71,14 @@ export class Scene
 			visual.position.copy physical.position
 			visual.quaternion.copy physical.quaternion
 
+	delay: (time, signal=@beforePhysics) -> new P (accept) ->
+		elapsed = 0.0
+		signal (dt) ->
+			elapsed += dt
+			return true if elapsed < time
+			accept(elapsed)
+			return false
+
 generateRock = (seed=Math.random()) ->
 	perlin.seed seed
 	radius = 1

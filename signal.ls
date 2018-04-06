@@ -2,8 +2,9 @@ export Signal = ({onAdd=->}={}) ->
 	listeners = []
 
 	signal = (cb) ->
-		return if onAdd(cb) === false
+		return cb if onAdd(cb) === false
 		listeners.push cb
+		return cb
 
 	signal.add = signal
 	signal.dispatch = (...args) !->
@@ -11,6 +12,9 @@ export Signal = ({onAdd=->}={}) ->
 		listeners := []
 		survivors = [.. for oldListeners when (.. ...args) !== false]
 		listeners := survivors.concat listeners
+	signal.remove = (cb) ->
+		listeners := listeners.filter (v) -> v != cb
+
 	signal.destroy = ->
 		listeners := []
 		signal.dispatch = -> false

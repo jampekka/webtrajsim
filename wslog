@@ -11,9 +11,11 @@ def logserver(outfile=sys.stdout):
     async def logger(sock, path):
         while True:
             msg = await sock.recv()
+            recv_ts_mono = time.monotonic()
             recv_ts = time.time()
             msg = json.loads(msg)
             msg['recv_ts'] = recv_ts
+            msg['recv_ts_mono'] = recv_ts_mono
             msg = str(msg)
             outfile.write(msg)
             outfile.write('\n')

@@ -190,6 +190,18 @@ export blindPursuit = seqr.bind ->*
 	env.let \destroy
 	yield env
 
+pd2 = require './pursuitDiscrimination2.ls'
+export blindPursuit18 = seqr.bind ->*
+	jitter_radius = 0.2
+	opts = deparam window.location.search.substring 1
+	if not (targetSize = opts.targetSize)?
+		yield runScenario pd2.visionTestPractice
+		res = yield runScenario pd2.visionTest, jitter_radius: jitter_radius, nReversals: 20
+		targetSize = res.stairs.estimate()
+	console.log "Target size", targetSize
+	yield runScenario pd2.fall, targetSize: targetSize, maxBlindDur: 0.0
+	yield runScenario pd2.fall, targetSize: targetSize
+
 deparam = require 'jquery-deparam'
 export singleScenario = seqr.bind ->*
 	# TODO: The control flow is a mess!

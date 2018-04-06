@@ -103,15 +103,21 @@ export ArrowMarker = seqr.bind (opts={}) ->*
 	#doc = $ yield $.ajax "./res/signs/arrow.svg", dataType: 'xml'
 	marker = new THREE.Object3D
 	marker.signs = signs = {}
-	load = seqr.bind (name, file) ->*
-		doc = $ yield $.ajax file, dataType: 'xml'
-		img = $ doc.find "svg"
-		obj = yield svgToSign img
+	marker.sign = null
+	
+	marker.addSign = (name, obj) ->
 		obj.visible = false
 		marker.add obj
 		signs[name] = obj
 
+	load = seqr.bind (name, file) ->*
+		doc = $ yield $.ajax file, dataType: 'xml'
+		img = $ doc.find "svg"
+		obj = yield svgToSign img
+		marker.addSign name, obj
+
 	marker.setSign = (name) ->
+		marker.sign = name
 		for n, o of signs
 			o.visible = false
 		return if name not of signs

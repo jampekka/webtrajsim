@@ -35,7 +35,10 @@ eachFrame = (f) -> new P (accept, reject) ->
 			stopped := true
 	tick()
 
-audioContext = new AudioContext
+if AudioContext
+	audioContext = new AudioContext
+else
+	audioContext = null
 
 {Sessions} = require './datalogger.ls'
 _logger = void
@@ -245,18 +248,20 @@ export runScenario = seqr.bind (scenarioLoader, ...args) !->*
 	yield ui.waitFor el~fadeOut
 	{passed, outro} = result = yield scenario
 	el.remove()
-
-	outro = ui.instructionScreen env, ->
+	
+	if outro?
+		outro = ui.instructionScreen env, ->
 			@ \title .append outro.title
 			@ \subtitle .append outro.subtitle
 			@ \content .append outro.content
 			me.let \done, passed: passed, outro: @, result: result
-	@let \outro, [outro]
-	yield outro
+		@let \outro, [outro]
+		yield outro
 	scope.let \destroy
 	yield scope
 	console.log "Scope destroyed"
 	env.logger.write destroyedScenario: scenarioLoader.scenarioName
+	return result.result
 
 #require './three.js/examples/js/controls/VRControls.js'
 #require './three.js/examples/js/effects/VREffect.js'
