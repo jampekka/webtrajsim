@@ -343,7 +343,7 @@ export baseScene = seqr.bind (env) ->*
 		speed: 1.3
 		hideDuration: 0.3
 		cueDuration: 1.0
-		waitDuration: 2.0
+		waitDuration: 1.0
 		maskDuration: 0.3
 		resultDuration: 2.0
 		targetDuration: 0.05
@@ -575,17 +575,26 @@ exportScenario \visionTest, (env, params={}) ->*
 
 	return yield @get \done
 
+uniform = (min, max) -> Math.random()*(max - min) + min
+
 exportScenario \fall, (env, params={}) ->*
 	@let \intro,
 		title: "The fall"
-	params.nTrials ?= 50
+	params.nTrials ?= 30
 	params.maxBlindDur ?= Infinity
 	params.maxHintDur ?= 1.0
 	params.minHintDur ?= 0.1
 	bounce_k = -0.5
+
+
 	s = 0.9
-	#start_pos = x: -s, y: s
-	start_pos = x: 0.0, y: s
+
+	aspect = screen.width/screen.height
+
+	ys = 1.0 - 0.1
+	xs = aspect - 0.3
+
+	start_pos = x: 0.0, y: ys
 	gravity = x: 0.0, y: -0.5
 
 	trialer = {platform, target, scene} = yield Trialer(env, params)
@@ -621,20 +630,20 @@ exportScenario \fall, (env, params={}) ->*
 			platform.position.y += vel.y*dt
 			vel.y += gravity.y*dt
 			vel.x += gravity.x*dt
-			if platform.position.y > s
-				platform.position.y = s
+			if platform.position.y > ys
+				platform.position.y = ys
 				vel.y *= bounce_k
 				vel.x *= -bounce_k
-			if platform.position.y < -s
-				platform.position.y = -s
+			if platform.position.y < -ys
+				platform.position.y = -ys
 				vel.y *= bounce_k
 				vel.x *= -bounce_k
-			if platform.position.x > s
-				platform.position.x = s
+			if platform.position.x > xs
+				platform.position.x = xs
 				vel.x *= bounce_k
 				vel.y *= -bounce_k
-			if platform.position.x < -s
-				platform.position.x = -s
+			if platform.position.x < -xs
+				platform.position.x = -xs
 				vel.x *= bounce_k
 				vel.y *= -bounce_k
 
@@ -642,11 +651,10 @@ exportScenario \fall, (env, params={}) ->*
 		scene.beforePhysics.remove(cb)
 
 	fall_duration = Math.sqrt(2*(-s - start_pos.y)/gravity.y)
-	console.log (start_pos.y - -s)
-	width = Math.abs s - start_pos.x
+	console.log (start_pos.y - -ys)
+	width = Math.abs xs - start_pos.x
 	max_speed = width/fall_duration
 
-	uniform = (min, max) -> Math.random()*(max - min) + min
 
 	target.setSign 'cue'
 	@let \scene, scene
@@ -682,6 +690,110 @@ exportScenario \fall, (env, params={}) ->*
 	@let \done
 	return passed: true
 
+exportScenario \linear, (env, params={}) ->*
+	@let \intro,
+		title: "The run"
+	params.nTrials ?= 30
+	params.maxBlindDur ?= Infinity
+	params.maxHintDur ?= 0.5
+	params.minHintDur ?= 0.1
+	params.minSpeed ?= 1.0
+	params.maxSpeed ?= 2.0
+
+	aspect = screen.width/screen.height
+
+	#ys = 1.0 - 0.1
+	xs = (aspect - 0.3) - 0.3
+
+	trialer = {platform, target, scene} = yield Trialer(env, params)
+	if params.targetSize?
+		scale = params.targetSize
+		target.signs.target.scale.set scale, scale, scale
+
+	go_linear = seqr.bind (launch_speed) ~>*
+		direction = -Math.sign platform.position.x
+		vel = direction*launch_speed
+		cb = scene.beforePhysics (dt) !~>
+			platform.position.x += vel*dt
+			if direction < 0 and platform.position.x < -xs
+				platform.position.x = -xs
+				@let \quit
+				return false
+			if direction > 0 and platform.position.x > xs
+				platform.position.x = xs
+				@let \quit
+				return false
+		yield @get \quit
+
+	target.setSign 'cue'
+	platform.position.x = -xs
+	@let \scene, scene
+	yield @get \run
+	for i from 0 til params.nTrials
+		launch_speed = uniform params.minSpeed, params.maxSpeed
+		traj_dur = 2*xs/launch_speed
+		end_at = traj_dur*0.9
+		hint_dur = uniform (params.minHintDur), end_at*(params.maxHintDur)
+		blind_dur = end_at - hint_dur
+		blind_dur = uniform 0.0, Math.min(blind_dur, params.maxBlindDur)
+		trial = trialer cueDuration: hint_dur + blind_dur
+
+		yield scene.delay 1.0
+		trial.let \run
+		traj = go_linear launch_speed
+
+		yield scene.delay hint_dur
+		target.visible = false
+
+		yield trial.get \target
+		target.visible = true
+
+		yield trial
+		yield traj
+
+	@let \done
+	return passed: true
+
+
+exportScenario \swing, (env, params={}) ->*
+	@let \intro,
+		title: "The swing"
+	params.nTrials ?= 30
+	params.maxBlindDur ?= 3.0
+	params.maxHintDur ?= 2.0
+	params.minHintDur ?= 1.0
+	params.doBlind ?= true
+	params.x_amp ?= 0.6
+	params.y_amp ?= 0.0
+
+
+	trialer = {platform, target, scene} = yield Trialer(env, params)
+
+	if params.targetSize?
+		scale = params.targetSize
+		target.signs.target.scale.set scale, scale, scale
+
+	scene.beforePhysics ->
+		t = scene.time*(Math.PI*2.0)/4.0
+		platform.position.x = params.x_amp*Math.sin t
+		platform.position.y = params.y_amp*Math.cos t
+
+	@let \scene scene
+	yield @get \run
+	for i from 0 til params.nTrials
+		hint_dur = uniform params.minHintDur, params.maxHintDur
+		blind_dur = uniform 0.0, params.maxBlindDur
+		trial = trialer cueDuration: hint_dur + blind_dur
+		trial.let \run
+		yield scene.delay hint_dur
+		if params.doBlind
+			target.visible = false
+			yield trial.get \target
+			target.visible = true
+		yield trial
+
+	@let \done
+	return passed: true
 
 export stimtest = (env) ->*
 	console.log "Here"

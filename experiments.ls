@@ -199,6 +199,15 @@ export blindPursuit18 = seqr.bind ->*
 		res = yield runScenario pd2.visionTest, jitter_radius: jitter_radius, nReversals: 20
 		targetSize = res.stairs.estimate()
 	console.log "Target size", targetSize
+
+	yield runScenario pd2.linear, targetSize: targetSize, maxBlindDur: 0.0
+	yield runScenario pd2.linear, targetSize: targetSize
+	#yield runScenario pd2.swing, targetSize: targetSize, doBlind: false
+	#yield runScenario pd2.swing, targetSize: targetSize
+
+	yield runScenario pd2.swing, targetSize: targetSize, y_amp: 0.6, doBlind: false
+	yield runScenario pd2.swing, targetSize: targetSize, y_amp: 0.6
+
 	yield runScenario pd2.fall, targetSize: targetSize, maxBlindDur: 0.0
 	yield runScenario pd2.fall, targetSize: targetSize
 
