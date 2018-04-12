@@ -193,10 +193,9 @@ export blindPursuit = seqr.bind ->*
 pd2 = require './pursuitDiscrimination2.ls'
 export blindPursuit18 = seqr.bind ->*
 	jitter_radius = 0.1
-	targetSize = 0.5
 	opts = deparam window.location.search.substring 1
-	#if not (targetSize = opts.targetSize)?
-	yield runScenario pd2.visionTestPractice
+	targetSize ?= opts.targetSize ? 0.3
+	yield runScenario pd2.visionTestPractice, targetScale: targetSize
 	#res = yield runScenario pd2.visionTest, jitter_radius: jitter_radius, nReversals: 20
 	#targetSize = res.stairs.estimate()
 	console.log "Target size", targetSize
@@ -211,6 +210,18 @@ export blindPursuit18 = seqr.bind ->*
 
 	yield runScenario pd2.fall, targetSize: targetSize, maxBlindDur: 0.0
 	yield runScenario pd2.fall, targetSize: targetSize
+
+	get_linear = -> runScenario pd2.linear, targetSize: targetSize
+	get_swing = -> runScenario pd2.swing, targetSize: targetSize, x_amp: 0.6, y_amp: 0.6
+	get_fall = -> runScenario pd2.fall, targetSize: targetSize
+
+	scenarios = []
+		.concat([get_linear]*2)
+		.concat([get_swing]*2)
+		.concat([get_fall]*2)
+	scenarios = shuffleArray scenarios
+	for scn in scenarios
+		yield scn()
 
 deparam = require 'jquery-deparam'
 export singleScenario = seqr.bind ->*
