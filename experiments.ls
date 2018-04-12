@@ -192,9 +192,9 @@ export blindPursuit = seqr.bind ->*
 
 pd2 = require './pursuitDiscrimination2.ls'
 export blindPursuit18 = seqr.bind ->*
-	jitter_radius = 0.1
+	jitter_radius = 0.01
 	opts = deparam window.location.search.substring 1
-	targetSize ?= opts.targetSize ? 0.3
+	targetSize ?= opts.targetSize ? 0.4
 	yield runScenario pd2.visionTestPractice, targetScale: targetSize
 	#res = yield runScenario pd2.visionTest, jitter_radius: jitter_radius, nReversals: 20
 	#targetSize = res.stairs.estimate()

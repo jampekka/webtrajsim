@@ -476,7 +476,7 @@ exportScenario \visionTestPractice, (env, params={}) ->*
 	defaultTestParams =
 		targetScale: 0.5
 		practiceTargetDuration: 1.0
-		jitterRadius: 0.2
+		jitterRadius: 0.1
 		correctNeeded: 4
 	
 	L = env.L
