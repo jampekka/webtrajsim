@@ -4,7 +4,19 @@ seqr = require './seqr.ls'
 assets = require './assets.ls'
 ui = require './ui.ls'
 P = require 'bluebird'
+{runScenario, newEnv} = require './scenarioRunner.ls'
 Co = P.coroutine
+$ = require 'jquery'
+
+runWithNewEnv = seqr.bind (scenario, ...args) ->*
+	envP = newEnv!
+	env = yield envP.get \env
+	ret = yield scenario env, ...args
+	envP.let \destroy
+	yield envP
+	return ret
+
+
 
 exportScenario = (name, impl) ->
 	scn = seqr.bind impl
@@ -476,9 +488,9 @@ exportScenario \visionTestPractice, (env, params={}) ->*
 	defaultTestParams =
 		targetScale: 0.5
 		practiceTargetDuration: 1.0
-		jitterRadius: 0.1
+		jitterRadius: 0.05
 		correctNeeded: 4
-	
+
 	L = env.L
 	@let \intro,
 		title: L "Vision test"
@@ -804,4 +816,19 @@ export stimtest = (env) ->*
 	@let \scene scene
 
 	yield @get \done
+
+
+export calib_dialog = seqr.bind (env) ->*
+	nocontrol = env with controls: change: ->
+	L = env.L
+	
+	task = ui.instructionScreen nocontrol, ->
+		@ \title .append L "Eye-tracker calibration"
+		@ \content .append L "EYE_TRACKER_CALIBRATION"
+		@ \accept-button .hide()
+		$("body").keyup (e) ->
+			if e.which == 89
+				task.let \accept
+	yield task
+	return
 

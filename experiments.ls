@@ -195,18 +195,20 @@ export blindPursuit18 = seqr.bind ->*
 	jitter_radius = 0.01
 	opts = deparam window.location.search.substring 1
 	targetSize ?= opts.targetSize ? 0.4
+
+	yield runWithNewEnv pd2.calib_dialog
+
 	yield runScenario pd2.visionTestPractice, targetScale: targetSize
-	#res = yield runScenario pd2.visionTest, jitter_radius: jitter_radius, nReversals: 20
-	#targetSize = res.stairs.estimate()
-	console.log "Target size", targetSize
 
 	yield runScenario pd2.linear, targetSize: targetSize, maxBlindDur: 0.0
 	yield runScenario pd2.linear, targetSize: targetSize
+	yield runWithNewEnv pd2.calib_dialog
 	#yield runScenario pd2.swing, targetSize: targetSize, doBlind: false
 	#yield runScenario pd2.swing, targetSize: targetSize
 
 	yield runScenario pd2.swing, targetSize: targetSize, y_amp: 0.6, doBlind: false
 	yield runScenario pd2.swing, targetSize: targetSize, y_amp: 0.6
+	yield runWithNewEnv pd2.calib_dialog
 
 	yield runScenario pd2.fall, targetSize: targetSize, maxBlindDur: 0.0
 	yield runScenario pd2.fall, targetSize: targetSize
@@ -220,7 +222,9 @@ export blindPursuit18 = seqr.bind ->*
 		.concat([get_swing]*2)
 		.concat([get_fall]*2)
 	scenarios = shuffleArray scenarios
-	for scn in scenarios
+	for scn, i in scenarios
+		if i%2 == 0
+			runWithNewEnv pd2.calib_dialog
 		yield scn()
 
 deparam = require 'jquery-deparam'
