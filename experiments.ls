@@ -203,11 +203,9 @@ export blindPursuit18 = seqr.bind ->*
 	yield runScenario pd2.linear, targetSize: targetSize, maxBlindDur: 0.0
 	yield runScenario pd2.linear, targetSize: targetSize
 	yield runWithNewEnv pd2.calib_dialog
-	#yield runScenario pd2.swing, targetSize: targetSize, doBlind: false
-	#yield runScenario pd2.swing, targetSize: targetSize
 
-	yield runScenario pd2.swing, targetSize: targetSize, y_amp: 0.6, doBlind: false
-	yield runScenario pd2.swing, targetSize: targetSize, y_amp: 0.6
+	yield runScenario pd2.swing, targetSize: targetSize, x_amp: 0.6, y_amp: 0.6, doBlind: false
+	yield runScenario pd2.swing, targetSize: targetSize, x_amp: 0.6, y_amp: 0.6
 	yield runWithNewEnv pd2.calib_dialog
 
 	yield runScenario pd2.fall, targetSize: targetSize, maxBlindDur: 0.0
@@ -224,8 +222,9 @@ export blindPursuit18 = seqr.bind ->*
 	scenarios = shuffleArray scenarios
 	for scn, i in scenarios
 		if i%2 == 0
-			runWithNewEnv pd2.calib_dialog
+			yield runWithNewEnv pd2.calib_dialog
 		yield scn()
+	yield runWithNewEnv pd2.calib_dialog
 
 deparam = require 'jquery-deparam'
 export singleScenario = seqr.bind ->*

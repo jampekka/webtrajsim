@@ -288,3 +288,58 @@ olemaan reagoimatta millään tavoin ääniärsykkeisiin.
 'Please keep your eyes closed': 'Pidä silmäsi suljettuna kunnes kuulet merkkiäänen.'
 
 'Round done': 'Kierros suoritettu'
+
+'Eye-tracker calibration': 'Silmänliikekameran kalibraatio'
+'EYE_TRACKER_CALIBRATION': """<p>Näytölle ilmestyy maalitauluja. Tehtäväsi on katsoa maalitaulun keskelle.
+Katsoessasi maalitaulua pyri pitämään pää mahdollisimman paikallaan ja olemaan räpyttelemättä. Kun maalitaulun paikka vaihtuu, pidä maalitaulu selkeästi näkökentässäsi, mutta liikuta päätäsi kuitenkin mahdollisimman vähän.
+<p>Kokeenjohtaja käynnistää kalibraation.
+"""
+
+'Vision test': 'Näkötesti'
+'Practice': 'Harjoitus'
+'VISION_TEST_PRACTICE': """Katso näytön keskellä olevaa maalitaulua.
+Tehtäväsi on vastata näppäimistön nuolinäppäimillä, mihin suuntaan C-kirjaimen aukko osoittaa.
+Harjoitus päättyy, kun olet vastannut neljä kertaa peräkkäin oikein."""
+'Flash practice': 'Välähdysharjoitus'
+'VISION_TEST_PRACTICE_FLASH': """
+Katso jälleen näytön keskellä olevaa maalitaulua. Tehtäväsi on vastata nuolinäppäimillä,
+mihin suuntaan C-kirjaimen aukko osoittaa, mutta nyt C-kirjain välähtää nopeasti.
+Harjoitus päättyy, kun olet vastannut neljä kertaa peräkkäin oikein."""
+
+'Peripheral flash practice': 'Ääreisnäköharjoitus'
+'VISION_TEST_PRACTICE_JITTER': """Katso jälleen näytön keskellä olevaa maalitaulua. Tehtäväsi on vastata nuolinäppäimillä, mihin suuntaan C-kirjaimen aukko osoittaa, mutta nyt C-kirjain ilmestyy satunnaiseen paikkaan näytöllä ja välähtää nopeasti. Pidä silti katse näytön keskellä maalitaulun kohdalla. Harjoitus päättyy, kun olet vastannut neljä kertaa peräkkäin oikein."""
+
+'Constant speed': 'Tasainen liike'
+'CONSTANT_SPEED': """Tässä kokeen osiossa kohde liikkuu vaakatasossa.
+Seuraa liikkuvaa kohdetta, jossa C-kirjain välähtää satunnaisin väliajoin.
+Tehtäväsi on vastata nuolinäppäimillä, mihin suuntaan C-kirjaimen aukko osoittaa."""
+
+'CONSTANT_SPEED_BLIND': """Tässä kokeen osiossa kohde liikkuu vaakatasossa. Seuraa liikkuvaa kohdetta.
+Kohde katoaa välillä näkyvistä satunnaisen pituiseksi
+ajaksi, minkä jälkeen se ilmestyy takaisin ja siinä välähtää C-kirjain.
+Pyri seuraamaan kohdetta silloinkin, kun se on kadonnut näkyvistä.
+Tehtäväsi on jälleen vastata nuolinäppäimillä, mihin suuntaan C-kirjaimen aukko osoittaa."""
+
+'Circular motion': 'Ympyräliike'
+'CIRCULAR_MOTION': """Tässä kokeen osiossa kohde liikkuu ympyräradalla myötäpäivään.
+Seuraa liikkuvaa kohdetta, jossa C-kirjain välähtää satunnaisin väliajoin.
+Tehtäväsi on vastata nuolinäppäimillä, mihin suuntaan C-kirjaimen aukko osoittaa."""
+
+'CIRCULAR_MOTION_BLIND': """Tässä kokeen osiossa kohde liikkuu ympyräradalla myötäpäivään.
+Seuraa liikkuvaa kohdetta.
+Kohde katoaa välillä näkyvistä satunnaisen pituiseksi
+ajaksi, minkä jälkeen se ilmestyy takaisin ja siinä välähtää C-kirjain.
+Pyri seuraamaan kohdetta silloinkin, kun se on kadonnut näkyvistä.
+Tehtäväsi on jälleen vastata nuolinäppäimillä, mihin suuntaan C-kirjaimen aukko osoittaa."""
+
+'Falling motion': 'Putoava liike'
+'FALLING_MOTION': """Tässä kokeen osiossa kohde putoaa kaaressa (joko vasemmalle tai oikealle).
+Seuraa liikkuvaa kohdetta, jossa C-kirjain välähtää satunnaisin väliajoin.
+Tehtäväsi on vastata nuolinäppäimillä, mihin suuntaan C-kirjaimen aukko osoittaa."""
+
+'FALLING_MOTION_BLIND': """Tässä kokeen osiossa kohde putoaa kaaressa (joko vasemmalle tai oikealle). Seuraa liikkuvaa kohdetta.
+Kohde katoaa välillä näkyvistä satunnaisen pituiseksi
+ajaksi, minkä jälkeen se ilmestyy takaisin ja siinä välähtää C-kirjain.
+Pyri seuraamaan kohdetta silloinkin, kun se on kadonnut näkyvistä.
+Tehtäväsi on jälleen vastata nuolinäppäimillä, mihin suuntaan C-kirjaimen aukko osoittaa."""
+

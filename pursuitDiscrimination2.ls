@@ -590,13 +590,16 @@ exportScenario \visionTest, (env, params={}) ->*
 uniform = (min, max) -> Math.random()*(max - min) + min
 
 exportScenario \fall, (env, params={}) ->*
-	@let \intro,
-		title: "The fall"
 	params.nTrials ?= 30
 	params.maxBlindDur ?= Infinity
 	params.maxHintDur ?= 1.0
 	params.minHintDur ?= 0.1
 	bounce_k = -0.5
+
+	L = env.L
+	@let \intro,
+		title: L "Falling motion"
+		content: L if params.maxBlindDur > 0 then "FALLING_MOTION_BLIND" else "FALLING_MOTION"
 
 
 	s = 0.9
@@ -703,14 +706,16 @@ exportScenario \fall, (env, params={}) ->*
 	return passed: true
 
 exportScenario \linear, (env, params={}) ->*
-	@let \intro,
-		title: "The run"
 	params.nTrials ?= 30
 	params.maxBlindDur ?= Infinity
 	params.maxHintDur ?= 0.5
 	params.minHintDur ?= 0.1
 	params.minSpeed ?= 1.0
 	params.maxSpeed ?= 2.0
+	L = env.L
+	@let \intro,
+		title: L "Constant speed"
+		content: L if params.maxBlindDur > 0 then "CONSTANT_SPEED_BLIND" else "CONSTANT_SPEED"
 
 	aspect = screen.width/screen.height
 
@@ -768,8 +773,6 @@ exportScenario \linear, (env, params={}) ->*
 
 
 exportScenario \swing, (env, params={}) ->*
-	@let \intro,
-		title: "The swing"
 	params.nTrials ?= 30
 	params.maxBlindDur ?= 3.0
 	params.maxHintDur ?= 2.0
@@ -777,6 +780,10 @@ exportScenario \swing, (env, params={}) ->*
 	params.doBlind ?= true
 	params.x_amp ?= 0.6
 	params.y_amp ?= 0.0
+	L = env.L
+	@let \intro,
+		title: L "Circular motion"
+		content: L if params.doBlind then "CIRCULAR_MOTION_BLIND" else "CIRCULAR_MOTION"
 
 
 	trialer = {platform, target, scene} = yield Trialer(env, params)
