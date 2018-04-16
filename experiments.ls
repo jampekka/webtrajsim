@@ -196,9 +196,10 @@ export blindPursuit18 = seqr.bind ->*
 	opts = deparam window.location.search.substring 1
 	targetSize ?= opts.targetSize ? 0.4
 
-	yield runWithNewEnv pd2.calib_dialog
-
+	yield runWithNewEnv pd2.calib_dialog, isFull: true
 	yield runScenario pd2.visionTestPractice, targetScale: targetSize
+
+	yield runScenario pd2.peripheralVisionTest
 
 	yield runScenario pd2.linear, targetSize: targetSize, maxBlindDur: 0.0
 	yield runScenario pd2.linear, targetSize: targetSize
@@ -224,7 +225,7 @@ export blindPursuit18 = seqr.bind ->*
 		if i%2 == 0
 			yield runWithNewEnv pd2.calib_dialog
 		yield scn()
-	yield runWithNewEnv pd2.calib_dialog
+	yield runWithNewEnv pd2.calib_dialog, isFull: true
 
 deparam = require 'jquery-deparam'
 export singleScenario = seqr.bind ->*

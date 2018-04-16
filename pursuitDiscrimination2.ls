@@ -438,6 +438,10 @@ Trialer = seqr.bind (env, defaultParams={}) ->*
 		response = yield response
 		targetKey = keys[orientation]
 		correct = targetKey == response
+		env.logger.write discriminationTrialResponse:
+			targetKey: targetKey
+			responseKey: response
+			wasCorrect: correct
 		@let \response, correct
 		if correct
 			target.setSign 'success'
@@ -586,6 +590,42 @@ exportScenario \visionTest, (env, params={}) ->*
 			stairs: stairs
 
 	return yield @get \done
+
+{knuthShuffle: shuffleArray} = require 'knuth-shuffle'
+exportScenario \peripheralVisionTest, (env, params={}) ->*
+	L = env.L
+
+	@let \intro,
+		title: L "Peripheral vision test"
+		content: L "PERIPHERAL_VISION_TEST"
+
+
+	{platform, target} = trialer = yield Trialer env
+
+	if params.targetSize?
+		scale = params.targetSize
+		target.signs.target.scale.set scale, scale, scale
+
+
+	radii = [].concat [0.05]*10, [0.1]*10, [0.2]*10, [0.3]*10, [0.4]*10
+	radii = shuffleArray radii
+
+	@let \scene trialer.scene
+	yield @get \run
+	for radius in radii
+		trial = trialer()
+		trial.let \run
+		yield trial.get \target
+		angle = Math.random()*Math.PI*2.0
+		platform.position.x = Math.sin(angle)*radius
+		platform.position.y = Math.cos(angle)*radius
+		yield trial.get \query
+		platform.position.x = 0
+		platform.position.y = 0
+		correct = yield trial
+
+	@let \done
+	return passed: true
 
 uniform = (min, max) -> Math.random()*(max - min) + min
 
@@ -825,12 +865,14 @@ export stimtest = (env) ->*
 	yield @get \done
 
 
-export calib_dialog = seqr.bind (env) ->*
+export calib_dialog = seqr.bind (env, params={}) ->*
 	nocontrol = env with controls: change: ->
 	L = env.L
-	
+
 	task = ui.instructionScreen nocontrol, ->
 		@ \title .append L "Eye-tracker calibration"
+		if params.isFull
+			@ \title .append "*"
 		@ \content .append L "EYE_TRACKER_CALIBRATION"
 		@ \accept-button .hide()
 		$("body").keyup (e) ->

@@ -343,3 +343,5 @@ ajaksi, minkä jälkeen se ilmestyy takaisin ja siinä välähtää C-kirjain.
 Pyri seuraamaan kohdetta silloinkin, kun se on kadonnut näkyvistä.
 Tehtäväsi on jälleen vastata nuolinäppäimillä, mihin suuntaan C-kirjaimen aukko osoittaa."""
 
+'Peripheral vision test': 'Ääreisnäkötesti'
+'PERIPHERAL_VISION_TEST': """Katso jälleen näytön keskellä olevaa maalitaulua. Tehtäväsi on vastata nuolinäppäimillä, mihin suuntaan C-kirjaimen aukko osoittaa, mutta nyt C-kirjain ilmestyy satunnaiseen paikkaan näytöllä ja välähtää nopeasti. Pidä silti katse näytön keskellä maalitaulun kohdalla. Osio kestää noin kaksi minuuttia."""
