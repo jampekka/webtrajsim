@@ -16,8 +16,7 @@ def logserver(outfile=sys.stdout):
             msg = json.loads(msg)
             msg['recv_ts'] = recv_ts
             msg['recv_ts_mono'] = recv_ts_mono
-            msg = str(msg)
-            outfile.write(msg)
+            json.dump(msg, outfile)
             outfile.write('\n')
             outfile.flush()
     return logger
