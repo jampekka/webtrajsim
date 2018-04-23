@@ -348,3 +348,7 @@ Pyri seuraamaan kohdetta silloinkin, kun se on kadonnut näkyvistä."""
 Nyt C-kirjain ilmestyy satunnaiseen paikkaan näytöllä ja välähtää nopeasti. 
 Pidä silti katse näytön keskellä maalitaulun kohdalla ja vastaa C:n suunta nuolinäppäimellä.
 Osio kestää noin kaksi minuuttia."""
+
+'VISION_TEST': """Nyt C-kirjaimen koko vaihtelee, mutta se välähtää aina ruudun keskellä.
+Vastaa havaitsemasi C:n suunta nuolinäppäimellä.
+Osio kestää noin kaksi minuuttia."""

@@ -199,6 +199,9 @@ export blindPursuit18 = seqr.bind ->*
 	yield runWithNewEnv pd2.calib_dialog, isFull: true
 	yield runScenario pd2.visionTestPractice, targetScale: targetSize
 
+	res = yield runScenario pd2.visionTest, initialValue: targetSize
+	console.log res.stairs.estimate()
+
 	yield runScenario pd2.peripheralVisionTest, targetSize: targetSize
 
 	yield runScenario pd2.linear, targetSize: targetSize, maxBlindDur: 0.0

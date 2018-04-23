@@ -482,7 +482,7 @@ class Staircase
 		if @max? and @value > @max
 			@value = @max
 
-	estimate: (r) ->
+	estimate: ->
 		if @reversals.length == 0
 			return @value
 		total = [@values[i] for i in @reversals].reduce((+))
@@ -562,8 +562,10 @@ exportScenario \visionTest, (env, params={}) ->*
 		min: parameters.minValue
 		max: parameters.maxValue
 
+	L = env.L
 	@let \intro,
-		title: "Vision test"
+		title: L "Vision test"
+		content: L "VISION_TEST"
 
 	{platform} = trialer = yield Trialer env
 	@let \scene trialer.scene
@@ -575,8 +577,8 @@ exportScenario \visionTest, (env, params={}) ->*
 		trial.let \run
 		yield trial.get \target
 		angle = Math.random()*Math.PI*2.0
-		platform.position.x = Math.sin(angle)*parameters.jitter_radius
-		platform.position.y = Math.cos(angle)*parameters.jitter_radius
+		platform.position.x = Math.sin(angle)*parameters.jitterRadius
+		platform.position.y = Math.cos(angle)*parameters.jitterRadius
 		yield trial.get \query
 		platform.position.x = 0
 		platform.position.y = 0
