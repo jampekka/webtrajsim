@@ -309,7 +309,8 @@ Harjoitus päättyy, kun olet vastannut C:n suunnan neljä kertaa peräkkäin oi
 'VISION_TEST_PRACTICE_FLASH': """
 Nyt C-kirjain välähtää nopeasti.
 Vastaa havaitsemasi C:n suunta nuolinäppäimellä.
-Harjoitus päättyy, kun olet vastannut neljä kertaa peräkkäin oikein."""
+Harjoitus päättyy, kun olet vastannut neljä kertaa peräkkäin oikein.
+Huom! Tehtävien koettu vaativuus saattaa vaihdella tehtävätyypin mukaan!"""
 
 'Peripheral flash practice': 'Ääreisnäköharjoitus'
 'VISION_TEST_PRACTICE_JITTER': """
