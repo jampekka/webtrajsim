@@ -403,6 +403,7 @@ export baseScene = seqr.bind (env) ->*
 			time: scene.time
 			platform: platform.matrix
 			platformVisible: platform.visible
+			targetVisible: target.visible
 			targetSign: target.sign
 			target: target.matrix
 	assets.addMarkerScreen scene
