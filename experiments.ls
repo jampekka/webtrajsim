@@ -199,21 +199,65 @@ export blindPursuit18 = seqr.bind ->*
 	yield runWithNewEnv pd2.calib_dialog, isFull: true
 	yield runScenario pd2.visionTestPractice, targetScale: targetSize
 
-	res = yield runScenario pd2.visionTest, initialValue: targetSize
-	console.log res.stairs.estimate()
+	#res = yield runScenario pd2.visionTest, initialValue: targetSize
+	#console.log res.stairs.estimate()
 
 	yield runScenario pd2.peripheralVisionTest, targetSize: targetSize
 
-	yield runScenario pd2.linear, targetSize: targetSize, maxBlindDur: 0.0
-	yield runScenario pd2.linear, targetSize: targetSize
+	#yield runScenario pd2.linear, targetSize: targetSize, maxBlindDur: 0.0
+	#yield runScenario pd2.linear, targetSize: targetSize
 	yield runWithNewEnv pd2.calib_dialog
 
 	yield runScenario pd2.swing, targetSize: targetSize, x_amp: 0.6, y_amp: 0.6, doBlind: false
 	yield runScenario pd2.swing, targetSize: targetSize, x_amp: 0.6, y_amp: 0.6
 	yield runWithNewEnv pd2.calib_dialog
-
+	
 	yield runScenario pd2.fall, targetSize: targetSize, maxBlindDur: 0.0
 	yield runScenario pd2.fall, targetSize: targetSize
+	
+	return	
+
+	get_linear = -> runScenario pd2.linear, targetSize: targetSize
+	get_swing = -> runScenario pd2.swing, targetSize: targetSize, x_amp: 0.6, y_amp: 0.6
+	get_fall = -> runScenario pd2.fall, targetSize: targetSize
+
+	scenarios = []
+		.concat([get_linear]*2)
+		.concat([get_swing]*2)
+		.concat([get_fall]*2)
+	scenarios = shuffleArray scenarios
+	for scn, i in scenarios
+		if i%2 == 0
+			yield runWithNewEnv pd2.calib_dialog
+		yield scn()
+	yield runWithNewEnv pd2.calib_dialog, isFull: true
+
+pd2 = require './pursuitDiscrimination2.ls'
+export blindPursuit21 = seqr.bind ->*
+	jitter_radius = 0.01
+	opts = deparam window.location.search.substring 1
+	targetSize ?= opts.targetSize ? 0.4
+
+	#yield runWithNewEnv pd2.calib_dialog, isFull: true
+	#yield runScenario pd2.visionTestPractice, targetScale: targetSize
+
+	#res = yield runScenario pd2.visionTest, initialValue: targetSize
+	#console.log res.stairs.estimate()
+
+	#yield runScenario pd2.peripheralVisionTest, targetSize: targetSize
+
+	#yield runScenario pd2.linear, targetSize: targetSize, maxBlindDur: 0.0
+	#yield runScenario pd2.linear, targetSize: targetSize
+	#yield runWithNewEnv pd2.calib_dialog
+
+	#yield runScenario pd2.swing, targetSize: targetSize, x_amp: 0.6, y_amp: 0.6, doBlind: false
+	yield runScenario pd2.swing, targetSize: targetSize, x_amp: 0.6, y_amp: 0.6
+	#yield runWithNewEnv pd2.calib_dialog
+	
+	#yield runScenario pd2.fall, targetSize: targetSize, maxBlindDur: 0.0
+	#yield runScenario pd2.fall, targetSize: targetSize
+	
+	return	
 
 	get_linear = -> runScenario pd2.linear, targetSize: targetSize
 	get_swing = -> runScenario pd2.swing, targetSize: targetSize, x_amp: 0.6, y_amp: 0.6

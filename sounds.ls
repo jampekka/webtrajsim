@@ -87,10 +87,47 @@ export WarningSound = seqr.bind (env, {gain=0.1}={}) ->*
 			return if not source?
 			source.stop()
 			source := void
+		
+				
 
 		isPlaying:~ -> source?
 	return self
 
+export DirectionSound = seqr.bind (env, {gain=0.1, low=440, high=880}={}) ->*
+	{audioContext} = env
+	source = audioContext.createOscillator()
+	gainNode = audioContext.createGain()
+	gainNode.gain.value = gain
+	panner = audioContext.createStereoPanner()
+	
+	midfreq = (low + high)/2
+	freqrng = (high - low)/2
+	
+	source.connect gainNode
+	.connect panner
+	.connect new BiquadFilterNode audioContext,
+		type: "highpass"
+		frequency: low/2
+	.connect new BiquadFilterNode audioContext,
+		type: "lowpass"
+		frequency: high*2
+	.connect audioContext.destination
+	
+	self =
+		start: ->
+			source.start()
+		
+		setPosition: (x, y, dt=0) ->
+			freq = y*freqrng + midfreq
+			t = audioContext.currentTime + dt
+			panner.pan.linearRampToValueAtTime x, t
+			source.frequency.linearRampToValueAtTime freq, t
+		
+		stop: ->
+			return if not source?
+			source.stop
+			source := void
+	return self
 
 export BellPlayer = seqr.bind ({audioContext}) ->*
 	ctx = audioContext
@@ -119,3 +156,4 @@ export NoisePlayer = seqr.bind ({audioContext}) ->*
 		sample.start()
 		yield new P (accept) ->
 			sample.onended = accept
+

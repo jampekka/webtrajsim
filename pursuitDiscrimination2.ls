@@ -5,6 +5,7 @@ assets = require './assets.ls'
 ui = require './ui.ls'
 P = require 'bluebird'
 {runScenario, newEnv} = require './scenarioRunner.ls'
+{DirectionSound} = require './sounds.ls'
 Co = P.coroutine
 $ = require 'jquery'
 
@@ -68,12 +69,13 @@ targetMaterial = -> new THREE.ShaderMaterial do
 		}
 		"""
 
-crowdedC = -> new THREE.ShaderMaterial do
+crowdedC = (brightness=0.0) -> new THREE.ShaderMaterial do
 		transparent: true
 		uniforms:
 			freq: value: 5.0
 			radius: value: 1.0
 			contrast: value: 1.0
+			brightness: value: brightness
 		extensions: derivatives: true
 		vertexShader: """
 		varying vec2 vUv;
@@ -93,6 +95,7 @@ crowdedC = -> new THREE.ShaderMaterial do
 		uniform float freq;
 		uniform float radius;
 		uniform float contrast;
+		uniform float brightness;
 
 		// see: https://www.diva-portal.org/smash/get/diva2:618269/FULLTEXT02.pdf
 		float aastep ( float distance ) {
@@ -140,7 +143,7 @@ crowdedC = -> new THREE.ShaderMaterial do
 			//float value = cos(exp(d)*10.0); value = (value + 1.0)/2.0;
 
 			//gl_FragColor = vec4(vec3(value), 1.0);
-			gl_FragColor = vec4(vec3(0.0), alpha);
+			gl_FragColor = vec4(vec3(brightness), alpha);
 		}
 		"""
 
@@ -378,6 +381,7 @@ export baseScene = seqr.bind (env) ->*
 	scene.preroll = ->
 		bg = new THREE.Color()
 		bg.setHSL 0, 0, 0.5
+		#bg.setHSL 0, 0, 0.0
 		env.renderer.setClearColor bg
 
 	platform = new THREE.Object3D()
@@ -823,6 +827,9 @@ exportScenario \swing, (env, params={}) ->*
 	params.doBlind ?= true
 	params.x_amp ?= 0.6
 	params.y_amp ?= 0.0
+	
+	sound = yield DirectionSound(env)
+
 	L = env.L
 	@let \intro,
 		title: L "Circular motion"
@@ -839,9 +846,11 @@ exportScenario \swing, (env, params={}) ->*
 		t = scene.time*(Math.PI*2.0)/4.0
 		platform.position.x = params.x_amp*Math.sin t
 		platform.position.y = params.y_amp*Math.cos t
+		sound.setPosition platform.position.x, platform.position.y
 
 	@let \scene scene
 	yield @get \run
+	sound.start()
 	for i from 0 til params.nTrials
 		hint_dur = uniform params.minHintDur, params.maxHintDur
 		blind_dur = uniform 0.0, params.maxBlindDur
@@ -854,6 +863,7 @@ exportScenario \swing, (env, params={}) ->*
 			target.visible = true
 		yield trial
 
+	sound.stop()
 	@let \done
 	return passed: true
 
