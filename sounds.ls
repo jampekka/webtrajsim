@@ -125,7 +125,7 @@ export DirectionSound = seqr.bind (env, {gain=0.1, low=440, high=880}={}) ->*
 		
 		stop: ->
 			return if not source?
-			source.stop
+			source.stop()
 			source := void
 	return self
 

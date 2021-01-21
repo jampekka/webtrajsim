@@ -827,8 +827,9 @@ exportScenario \swing, (env, params={}) ->*
 	params.doBlind ?= true
 	params.x_amp ?= 0.6
 	params.y_amp ?= 0.0
+	params.sound_gain ?= 0.0
 	
-	sound = yield DirectionSound(env)
+	sound = yield DirectionSound(env, gain: params.sound_gain)
 
 	L = env.L
 	@let \intro,
@@ -842,13 +843,15 @@ exportScenario \swing, (env, params={}) ->*
 		scale = params.targetSize
 		target.signs.target.scale.set scale, scale, scale
 
-	scene.beforePhysics ->
+	scene.beforePhysics (dt) ->
 		t = scene.time*(Math.PI*2.0)/4.0
 		platform.position.x = params.x_amp*Math.sin t
 		platform.position.y = params.y_amp*Math.cos t
-		sound.setPosition platform.position.x, platform.position.y
+		sound.setPosition platform.position.x, platform.position.y, dt
 
 	@let \scene scene
+	if gc?
+		gc() # Run GC to try to avoid major GC during the trials
 	yield @get \run
 	sound.start()
 	for i from 0 til params.nTrials

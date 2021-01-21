@@ -69,8 +69,7 @@ wsLogger = seqr.bind (url) ->*
 			socket.send JSON.stringify do
 				time: Date.now() / 1000
 				data: data
-		close: ->
-			#socket.close()
+		close: -> #socket.close()
 	return _wsLogger
 
 
@@ -114,15 +113,15 @@ export newEnv = seqr.bind !->*
 		audioContext: audioContext
 		onSize: onSize
 		opts: opts
-
-	if not opts.disableDefaultLogger
+	
+	if opts.wsLogger?
+		env.logger = yield wsLogger opts.wsLogger
+	else if not opts.disableDefaultLogger
 		env.logger = yield getLogger!
 	else
 		env.logger =
 			write: ->
 			close: ->
-	if opts.wsLogger?
-		env.logger = yield wsLogger opts.wsLogger
 	@finally ->
 		env.logger.close()
 
