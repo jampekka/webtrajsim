@@ -473,8 +473,11 @@ export addMarkerScreen = (scene) ->
 	s = 0.1
 	pos = [[l + s, t - s], [r - s, t - s], [l + s, -t + s], [r - s, -t + s]]
 	for i from 0 til 4
-		path = 'res/markers/' + i + '_marker.png'
+		#path = 'res/markers/' + i + '_marker.png'
+		path = 'res/apriltags/tag25_09_' + i.toString().padStart(5, "0") + '.png'
 		texture = THREE.ImageUtils.loadTexture path
+		texture.magFilter = THREE.NearestFilter
+		texture.minFilter = THREE.NearestFilter
 		marker = new THREE.Mesh do
 			new THREE.PlaneGeometry 2*s, 2*s
 			new THREE.MeshBasicMaterial map:texture
