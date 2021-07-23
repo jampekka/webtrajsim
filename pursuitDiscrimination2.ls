@@ -380,8 +380,8 @@ export baseScene = seqr.bind (env) ->*
 	scene.visual.add new THREE.AmbientLight 0xffffff
 	scene.preroll = ->
 		bg = new THREE.Color()
-		bg.setHSL 0, 0, 0.5
-		#bg.setHSL 0, 0, 0.0
+		#bg.setHSL 0, 0, 0.5
+		bg.setHSL 0, 0, 0.0
 		env.renderer.setClearColor bg
 
 	platform = new THREE.Object3D()
