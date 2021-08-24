@@ -897,3 +897,89 @@ export calib_dialog = seqr.bind (env, params={}) ->*
 	yield task
 	return
 
+rose_function = (a, k) -> (t) ->
+	r = a*Math.cos(k*t)
+	x = r*Math.sin t
+	y = r*Math.cos t
+	return [x, y]
+
+everpolate = require 'everpolate'
+
+rose_arc = (a, k, dt=0.000001) ->
+	rose = rose_function a, k
+	[x, y] = rose 0.0
+	dist = 0.0
+
+	xs = [x]
+	ys = [y]
+	dists = [0.0]
+
+	t = dt
+	max_t = Math.PI*4 # Hack
+	while t < (max_t + dt) # For wrapping around
+		[xn, yn] = rose t
+		dist += Math.sqrt((xn - x)**2 + (yn - y)**2)
+		[x, y] = [xn, yn]
+		xs.push x
+		ys.push y
+		dists.push dist
+		t += dt
+	max_d = dists[*-2]
+	rose = (d) ->
+		d = d%max_d
+		x = everpolate.linear d, dists, xs
+		y = everpolate.linear d, dists, ys
+		return [x, y]
+	return rose
+		
+
+exportScenario \rose, (env, params={}) ->*
+	params.nTrials ?= 30
+	params.maxBlindDur ?= 3.0
+	params.maxHintDur ?= 2.0
+	params.minHintDur ?= 1.0
+	params.doBlind ?= true
+	params.a = 0.6
+	params.k = 2
+	params.sound_gain ?= 0.0
+	
+	L = env.L
+	@let \intro,
+		title: L "Circular motion"
+		content: L if params.doBlind then "CIRCULAR_MOTION_BLIND" else "CIRCULAR_MOTION"
+
+
+	trialer = {platform, target, scene} = yield Trialer(env, params)
+
+	if params.targetSize?
+		scale = params.targetSize
+		target.signs.target.scale.set scale, scale, scale
+	
+	path = rose_arc params.a, params.k
+	path = rose_function params.a, params.k
+	scene.beforePhysics (dt) ->
+		t = scene.time*(Math.PI*2.0)/9.0
+		
+		[x, y] = path t
+		platform.position.x = x
+		platform.position.y = y
+
+	@let \scene scene
+	if gc?
+		gc() # Run GC to try to avoid major GC during the trials
+	yield @get \run
+	for i from 0 til params.nTrials
+		hint_dur = uniform params.minHintDur, params.maxHintDur
+		blind_dur = uniform 0.0, params.maxBlindDur
+		trial = trialer cueDuration: hint_dur + blind_dur
+		trial.let \run
+		yield scene.delay hint_dur
+		if params.doBlind
+			target.visible = false
+			yield trial.get \target
+			target.visible = true
+		yield trial
+
+	@let \done
+	return passed: true
+

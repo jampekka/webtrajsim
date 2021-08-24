@@ -250,6 +250,7 @@ export blindPursuit21 = seqr.bind ->*
 	#yield runScenario pd2.linear, targetSize: targetSize
 	#yield runWithNewEnv pd2.calib_dialog
 
+	yield runScenario pd2.rose, targetSize: targetSize, doBlind: false
 	#yield runScenario pd2.swing, targetSize: targetSize, x_amp: 0.6, y_amp: 0.6, doBlind: false
 	yield runScenario pd2.swing, targetSize: targetSize, x_amp: 0.6, y_amp: 0.6, sound_gain: 0
 	yield runScenario pd2.swing, targetSize: targetSize, x_amp: 0.6, y_amp: 0.6, sound_gain: 0.01
